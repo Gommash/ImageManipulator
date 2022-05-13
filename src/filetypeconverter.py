@@ -1,12 +1,12 @@
 import os
-import pydicom as dicom
-import h5py
+
 import cv2
+import h5py
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
-from pathlib import Path
+import pydicom as dicom
 from PIL import Image
+from tqdm import tqdm
 
 
 class ImageFileTypeConverter:
@@ -61,11 +61,6 @@ class DicomConverter(ImageFileTypeConverter):
                 if os.path.isfile(src) and os.path.splitext(src)[1] == ".dcm":
                     self.convert_image_file(src)
                 elif os.path.isdir(src):
-                    """
-                    d = src.replace(self.inputdirectory, "")
-                    if not os.path.exists(os.path.join(self.outputdirectory + d, filename)):
-                        os.makedirs(self.outputdirectory + d)
-                    """
                     self.read_files(src)
 
     def convert_image_file(self, image_file):
@@ -80,7 +75,7 @@ class DicomConverter(ImageFileTypeConverter):
 
     def convert(self):
         self.read_files(self.inputdirectory)
-        """
+
         for filename in os.listdir(self.inputdirectory):
             src = os.path.join(self.inputdirectory, filename)
             if src is not None:
@@ -92,7 +87,6 @@ class DicomConverter(ImageFileTypeConverter):
                 images_path = os.listdir(self.inputdirectory)
                 for n, image in enumerate(images_path):
                     ds = dicom.dcmread(os.path.join(self.inputdirectory, image))
-                    shape = ds.pixel_array.shape
                     # Convert to float to avoid overflow or underflow losses.
                     image_2d = ds.pixel_array.astype(float)
                     # Rescaling grey scale between 0-255
@@ -101,4 +95,3 @@ class DicomConverter(ImageFileTypeConverter):
                     image_2d_scaled = np.uint8(image_2d_scaled)
                     image = image.replace('.dcm', f".{self.img_filetype}")
                     cv2.imwrite(os.path.join(self.outputdirectory, image), image_2d_scaled)
-        """
