@@ -14,11 +14,16 @@ class WrappedImage:
         if img_class_type == "cv2":
             self.img_obj = cv2.imread(src)
             self.img_obj = cv2.cvtColor(self.img_obj, cv2.COLOR_RGB2BGR)
+            self.img_obj = cv2.cvtColor(self.img_obj, cv2.COLOR_BGR2GRAY)
         elif img_class_type == "pil":
             self.img_obj = Image.open(src)
             self.img_obj = self.img_obj.convert("RGB")
+            self.img_obj = ImageOps.grayscale(self.img_obj)
+
         elif img_class_type == "skimage":
             self.img_obj = io.imread(src)
+            if len(self.img_obj.shape) == 3:
+                self.img_obj = color.rgb2gray(self.img_obj)
 
     def get_img_classtype(self) -> str:
         return self.img_class_type
@@ -47,12 +52,11 @@ class ImageTransform(WrappedImage):
 
 # Background Remover
 class RollingBallFilter(ImageFilter):
-    def __init__(self, src, filepath, radius=100.0, grayscale=True, invert=False):
+    def __init__(self, src, filepath, radius=100.0, invert=False):
         super().__init__(src, "skimage")
         self.radius = radius
         self.filepath = filepath
         self.invert = invert
-        self.grayscale = grayscale
 
     def enhance(self):
         image = util.img_as_float64(self.img_obj)
@@ -63,13 +67,6 @@ class RollingBallFilter(ImageFilter):
             (self.radius * 2, self.radius * 2),
             normalized_radius * 2
         )
-        print(f"Grayscale: {self.grayscale}, invert: {self.invert}")
-        if self.grayscale and len(image.shape) == 3:
-            gray_image = color.rgb2gray(gray_image)
-            print("converted to grayscale")
-        elif not self.grayscale and len(image.shape) == 2:
-            print("converted to RGB")
-            gray_image = color.gray2rgb(gray_image)
         background = restoration.rolling_ball(gray_image, kernel=kernel)
         if self.invert:
             background = util.invert(background)
@@ -163,7 +160,7 @@ class RichardsonLucyFilter(ImageFilter):
         super().__init__(src, "skimage")
         self.psf = np.ones((5, 5)) / 25
         self.num_iter = num_iter
-        self.img_obj = conv2(color.rgb2gray(self.img_obj), self.psf, 'same')
+        self.img_obj = conv2(self.img_obj, self.psf, 'same')
 
     def enhance(self):
         return restoration.richardson_lucy(self.img_obj, psf=self.psf

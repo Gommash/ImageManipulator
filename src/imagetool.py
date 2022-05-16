@@ -52,7 +52,7 @@ def main():
                         start = time.time()
                         # Rolling ball
                         if command[0] == "rolling-ball":
-                            img_data = RollingBallFilter(img_src, radius=float(command[1]), grayscale=bool(command[2] == "true"), invert=bool(command[3] == "true"),
+                            img_data = RollingBallFilter(img_src, radius=float(command[1]), invert=bool(command[2] == "true"),
                                                          filepath=f"{odir}\\{filename}").enhance()
                         # Color
                         elif command[0] == "color":
@@ -117,7 +117,7 @@ def main():
                         elif command[0] == "laplacian":
                             img_data = imagemanipulator.LaplacianEdgeDetectionFilter(img_src, ksize=int(command[1]),
                                                                                      delta=int(command[2]),
-                                                                                     scale=int(command[3]) == "true").enhance()
+                                                                                     scale=int(command[3])).enhance()
                         # Sobel X Edge Detection
                         elif command[0] == "sobel":
                             img_data = imagemanipulator.SobelEdgeDetectionFilter(img_src, xaxis=bool(command[1]) == "true").enhance()
