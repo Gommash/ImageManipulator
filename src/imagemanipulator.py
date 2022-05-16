@@ -3,7 +3,7 @@ import numpy as np
 
 import torchvision.transforms as transforms
 from PIL import ImageEnhance, Image, ImageOps
-from skimage import restoration, io, color
+from skimage import restoration, io, color, util, img_as_ubyte
 from scipy.signal import convolve2d as conv2
 
 
@@ -47,12 +47,31 @@ class ImageTransform(WrappedImage):
 
 # Background Remover
 class RollingBallFilter(ImageFilter):
-    def __init__(self, src, radius=100):
+    def __init__(self, src, filepath, radius=100, grayscale=True, invert=False):
         super().__init__(src, "skimage")
         self.radius = radius
+        self.filepath = filepath
+        self.invert = invert
+        self.grayscale = grayscale
 
     def enhance(self):
-        return self.img_obj - restoration.rolling_ball(self.img_obj, radius=self.radius)
+        image = util.img_as_float64(self.img_obj)
+        gray_image = image
+        if self.grayscale and len(image.shape) == 3:
+            gray_image = color.rgb2gray(gray_image)
+        elif not self.grayscale and len(image.shape) == 2:
+            gray_image = color.gray2rgb(gray_image)
+        background = restoration.rolling_ball(gray_image, radius=self.radius)
+        if self.invert:
+            background = util.invert(background)
+            gray_image = util.invert(gray_image)
+            filtered_image = util.invert(gray_image - background)
+        else:
+            filtered_image = gray_image - background
+        img_n = cv2.normalize(src=filtered_image, dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX,
+                              dtype=cv2.CV_8U)
+        io.imsave(self.filepath, img_n)
+        return 0
 
 
 # histogram equalization
@@ -289,7 +308,7 @@ class CropWidthTransform(ImageTransform):
 
     def transform(self):
         width, height = self.img_obj.size
-        return np.array(self.img_obj.crop((0, 0, width-self.size, height)))
+        return np.array(self.img_obj.crop((0, 0, width - self.size, height)))
 
 
 # Center Cropping

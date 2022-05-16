@@ -1,6 +1,7 @@
 import getopt
 import os
 import sys
+import time
 
 from PIL import Image
 
@@ -45,10 +46,12 @@ def main():
             img_src = os.path.join(idir, filename)
             if img_src is not None:
                 if os.path.isfile(img_src):
-                    img_data = []
+                    img_data = 0
+                    start = time.time()
                     # Rolling ball
                     if command[0] == "rolling-ball":
-                        img_data = RollingBallFilter(img_src, int(command[1])).enhance()
+                        img_data = RollingBallFilter(img_src, radius=int(command[1]), grayscale=bool(command[2]), invert=bool(command[3]),
+                                                     filepath=f"{odir}\\{filename}").enhance()
                     # Color
                     elif command[0] == "color":
                         img_data = imagemanipulator.ColorFilter(img_src, float(command[1])).enhance()
@@ -150,8 +153,12 @@ def main():
                     elif command[0] == "padding":
                         img_data = imagemanipulator.PaddingTransform(img_src, padding=eval(command[1]),
                                                                      size=eval(command[2])).transform()
-                    img = Image.fromarray(img_data)
-                    img.convert('RGB').save(f"{odir}\\{filename}")
+                    if not isinstance(img_data, int):
+                        img = Image.fromarray(img_data)
+                        img.convert('RGB').save(f"{odir}\\{filename}")
+                    print(
+                        f"{command[0]} was applied on: {odir}\\{filename} time taken: {(time.time() - start) * 1000}ms",
+                        flush=True)
 
 
 if __name__ == '__main__':
