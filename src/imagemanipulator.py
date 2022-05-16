@@ -47,7 +47,7 @@ class ImageTransform(WrappedImage):
 
 # Background Remover
 class RollingBallFilter(ImageFilter):
-    def __init__(self, src, filepath, radius=100, grayscale=True, invert=False):
+    def __init__(self, src, filepath, radius=100.0, grayscale=True, invert=False):
         super().__init__(src, "skimage")
         self.radius = radius
         self.filepath = filepath
@@ -57,11 +57,20 @@ class RollingBallFilter(ImageFilter):
     def enhance(self):
         image = util.img_as_float64(self.img_obj)
         gray_image = image
+
+        normalized_radius = self.radius / 255
+        kernel = restoration.ellipsoid_kernel(
+            (self.radius * 2, self.radius * 2),
+            normalized_radius * 2
+        )
+        print(f"Grayscale: {self.grayscale}, invert: {self.invert}")
         if self.grayscale and len(image.shape) == 3:
             gray_image = color.rgb2gray(gray_image)
+            print("converted to grayscale")
         elif not self.grayscale and len(image.shape) == 2:
+            print("converted to RGB")
             gray_image = color.gray2rgb(gray_image)
-        background = restoration.rolling_ball(gray_image, radius=self.radius)
+        background = restoration.rolling_ball(gray_image, kernel=kernel)
         if self.invert:
             background = util.invert(background)
             gray_image = util.invert(gray_image)
