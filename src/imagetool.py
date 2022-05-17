@@ -37,7 +37,7 @@ def main():
 
     print(f"idir={idir}, odir={odir}, command={command}")
 
-    if command[0] == "fileformat-convert":
+    if command[0] == "filetype-converter":
         if command[1] == "hdf":
             filetypeconverter.HDFConverter(idir, odir, command[2]).convert()
         elif command[1] == "dicom":
