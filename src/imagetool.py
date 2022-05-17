@@ -124,7 +124,7 @@ def main():
                         # Random Perspective
                         elif command[0] == "random-perspective":
                             img_data = imagemanipulator.RandomPerspective(img_src, distortion_scale=float(command[1]),
-                                                                          probability=bool(command[2]) == "true").transform()
+                                                                          probability=float(command[2])).transform()
                         # Random Horizontal Flipping
                         elif command[0] == "random-horizontal-flip":
                             img_data = imagemanipulator.RandomHorizontalFlipTransform(img_src,
